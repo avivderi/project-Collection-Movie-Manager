@@ -12,7 +12,6 @@ export function readFileMovies(callback) {
         }
     })
 }
-readFileMovies(console.log)
 
 export function writeFileMovies(content) {
     fs.writeFile(fileName, JSON.stringify, content, (err) => {
