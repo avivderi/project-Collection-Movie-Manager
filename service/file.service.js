@@ -4,9 +4,10 @@ const fileName = "../data/movies.json"
 
 export function readFileMovies(callback) {
     fs.readFile(fileName, "utf8", (err, data) => {
-        if (err) return err.message
+        if (err) return callback(err, null);
         try {
-            callback(JSON.parse(data))
+            const fileContent = JSON.parse(data)
+            callback(fileContent)
         } catch (err) {
             console.log("file content is not a Json")
         }
