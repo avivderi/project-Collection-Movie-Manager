@@ -1,4 +1,5 @@
 import readline from 'readline-sync';
+import { validateTitle, validateYear, validateRating } from '../utils/validator.js';
 
 export function showAllMovies(fileContent) {
     let movies = [];
@@ -22,31 +23,24 @@ export function generateNextId(fileContent) {
 }
 
 export function createNewMovie(fileContent) {
-    let title = "";
-    while (title === "") {
+    let title = readline.question("Type the movie name: ").trim();
+    while (!validateTitle(title)) {
+        console.log("Movie name cannot be empty");
         title = readline.question("Type the movie name: ").trim();
-        if (title === "") {
-            console.log("Movie name cannot be empty");
-        }
-    }
-    
-    const genre = readline.question("Type the genre: ").toLowerCase().trim();
-    
-    let year = 0;
-    const currentYear = new Date().getFullYear();
-    while (year <= 1900 || year > currentYear) {
-        year = readline.questionInt("Type the year of release: ");
-        if (year <= 1900 || year > currentYear) {
-            console.log("Year must be greater than 1900 and up to " + currentYear);
-        }
     }
 
-    let rating = -1;
-    while (rating < 0 || rating > 10) {
+    const genre = readline.question("Type the genre: ").toLowerCase().trim();
+
+    let year = readline.questionInt("Type the year of release: ");
+    while (!validateYear(year)) {
+        console.log("Year must be greater than 1900 and up to " + new Date().getFullYear());
+        year = readline.questionInt("Type the year of release: ");
+    }
+
+    let rating = readline.questionFloat("Type the movie rating: ");
+    while (!validateRating(rating)) {
+        console.log("Rating must be between 0 and 10");
         rating = readline.questionFloat("Type the movie rating: ");
-        if (rating < 0 || rating > 10) {
-            console.log("Rating must be between 0 and 10");
-        }
     }
 
     const id = generateNextId(fileContent);
@@ -66,18 +60,16 @@ export function deleteMovie(fileContent, id) {
 export function updateRate(fileContent, id) {
     for (let movie of fileContent) {
         if (movie.id === id) {
-            let rating = -1;
-            while (rating < 0 || rating > 10) {
+            let rating = readline.questionFloat("Type the new movie rating: ");
+            while (!validateRating(rating)) {
+                console.log("Rating must be between 0 and 10");
                 rating = readline.questionFloat("Type the new movie rating: ");
-                if (rating < 0 || rating > 10) {
-                    console.log("Rating must be between 0 and 10");
-                }
             }
             movie.rating = rating;
             console.log("rating is updated");
             return fileContent;
         }
-    }  
+    }
     console.log("id not found");
     return fileContent;
 }
@@ -90,7 +82,7 @@ export function searchByName(fileContent, str) {
     if (results.length === 0) {
         console.log("No results");
         return [];
-    } 
+    }
     return results;
 }
 
@@ -102,6 +94,21 @@ export function sortByGenre(fileContent, genre) {
         return [];
     }
     return result;
+}
+
+export function sortMovies(fileContent, field) {
+    const validFields = ["title", "year", "rating"];
+    if (!validFields.includes(field)) {
+        console.log("Invalid sort field");
+        return fileContent;
+    }
+    const sorted = [...fileContent].sort((a, b) => {
+        if (typeof a[field] === "string") {
+            return a[field].localeCompare(b[field]);
+        }
+        return a[field] - b[field];
+    });
+    return sorted;
 }
 
 export function showStatistics(fileContent) {
